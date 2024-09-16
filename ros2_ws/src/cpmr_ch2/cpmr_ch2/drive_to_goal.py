@@ -43,8 +43,13 @@ class MoveToGoal(Node):
         self._goal_y = self.get_parameter('goal_y').get_parameter_value().double_value
         self.declare_parameter('goal_t', 0.0)
         self._goal_t = self.get_parameter('goal_t').get_parameter_value().double_value
+        
+        self.declare_parameter('max_vel', 0.2)
+        self._max_vel = self.get_parameter('max_vel').get_parameter_value().double_value
+        
         self.add_on_set_parameters_callback(self.parameter_callback)
         self.get_logger().info(f"initial goal {self._goal_x} {self._goal_y} {self._goal_t}")
+        self.get_logger().info(f"maximum velocity {self._max_vel}")
 
         self._subscriber = self.create_subscription(Odometry, "/odom", self._listener_callback, 1)
         self._publisher = self.create_publisher(Twist, "/cmd_vel", 1)
@@ -52,7 +57,7 @@ class MoveToGoal(Node):
 
     def _listener_callback(self, msg, vel_gain=5.0, max_vel=0.2, max_pos_err=0.05):
         pose = msg.pose.pose
-
+        max_vel = self._max_vel
         cur_x = pose.position.x
         cur_y = pose.position.y
         o = pose.orientation
