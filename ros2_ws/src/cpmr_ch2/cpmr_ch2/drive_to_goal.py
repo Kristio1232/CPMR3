@@ -74,7 +74,15 @@ class MoveToGoal(Node):
             y = max(min(y_diff * vel_gain, max_vel), -max_vel)
             twist.linear.x = x * math.cos(cur_t) + y * math.sin(cur_t)
             twist.linear.y = -x * math.sin(cur_t) + y * math.cos(cur_t)
-            self.get_logger().info(f"at ({cur_x},{cur_y},{cur_t}) goal ({self._goal_x},{self._goal_y},{self._goal_t})")
+        
+        angle_diff = math.atan2(math.sin(self._goal_t - cur_t), math.cos(self._goal_t - cur_t))  
+
+
+        if abs(angle_diff) > max_pos_err:
+            self.get_logger().info(f"Twist {angle_diff}") 
+            twist.angular.z = max(min(angle_diff * vel_gain*4, max_vel*5), -max_vel*5)
+            self.get_logger().info(f"Twist ang {twist.angular.z}")
+        self.get_logger().info(f"at ({cur_x},{cur_y},{cur_t}) goal ({self._goal_x},{self._goal_y},{self._goal_t})")
         self._publisher.publish(twist)
 
     def parameter_callback(self, params):
