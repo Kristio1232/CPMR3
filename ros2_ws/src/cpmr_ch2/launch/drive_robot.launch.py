@@ -12,6 +12,7 @@ def generate_launch_description():
         DeclareLaunchArgument('goal_y', default_value = '0.0', description = 'goal (y)'),
         DeclareLaunchArgument('goal_t', default_value = '0.0', description = 'goal (t)'),
         DeclareLaunchArgument('max_vel', default_value = '0.5', description = 'maximum velocity'),
+        DeclareLaunchArgument('cmd_gain', default_value = '5.0', description = 'controller gain'),
         Node(
             package = 'cpmr_ch2',
             executable = 'drive_to_goal',
@@ -21,6 +22,7 @@ def generate_launch_description():
                 {'goal_y' : LaunchConfiguration('goal_y')},
                 {'goal_t' : LaunchConfiguration('goal_t')},
                 {'max_vel' : LaunchConfiguration('max_vel')},
+                {'cmd_gain' : LaunchConfiguration('cmd_gain')},
             ],
         ),
     ])
