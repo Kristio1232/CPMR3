@@ -58,9 +58,10 @@ class MoveToGoal(Node):
         self._publisher = self.create_publisher(Twist, "/cmd_vel", 1)
 
 
-    def _listener_callback(self, msg, vel_gain=self._cmd_gain, max_vel=self._max_vel, max_pos_err=0.05):
+    def _listener_callback(self, msg, vel_gain=5.0, max_vel=0.2, max_pos_err=0.05):
         pose = msg.pose.pose
         max_vel = self._max_vel
+        vel_gain = self._cmd_gain
         cur_x = pose.position.x
         cur_y = pose.position.y
         o = pose.orientation
