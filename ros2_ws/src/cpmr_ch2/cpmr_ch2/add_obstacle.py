@@ -4,7 +4,7 @@ import rclpy
 import os
 from gazebo_msgs.srv import SpawnEntity, DeleteEntity
 
-def make_obstacle(node, id, x0, y0, h, r):
+def make_obstacle(node, id, x0, y0, h, w, l):
    CYLINDER_MODEL = """
        <sdf version="1.6"> 				\
          <world name="default">                         \
@@ -33,6 +33,33 @@ def make_obstacle(node, id, x0, y0, h, r):
            </model>					\
          </world>                                       \
        </sdf>"""
+       
+   BOX_MODEL = """
+        <sdf version="1.6">                 \
+          <world name="default">             \
+            <model name="obstacle">          \
+              <static>true</static>          \
+              <link name="all">               \
+                <collision name="one">        \
+                  <pose>0 0 {o} 0 0 0</pose>  \
+                  <geometry>                  \
+                    <box>                     \
+                      <size>{l} {w} {h}</size> \
+                    </box>                    \
+                  </geometry>                 \
+                </collision>                  \
+                <visual name="two">           \
+                  <pose>0 0 {o} 0 0 0</pose>  \
+                  <geometry>                  \
+                    <box>                     \
+                      <size>{l} {w} {h}</size> \
+                    </box>                    \
+                  </geometry>                 \
+                </visual>                     \
+              </link>                          \
+            </model>                           \
+          </world>                             \
+         </sdf>"""
 
    client = node.create_client(SpawnEntity, "/spawn_entity")
    node.get_logger().info("Connecting to /spawn_entity service...")
@@ -43,8 +70,8 @@ def make_obstacle(node, id, x0, y0, h, r):
    request.initial_pose.position.x = float(x0)
    request.initial_pose.position.y = float(y0)
    request.initial_pose.position.z = float(0)
-   dict = {'h' : h, 'r':r, 'o': h/2}
-   request.xml = CYLINDER_MODEL.format(**dict)
+   dict = {'h' : h, 'l':l, 'w':w, 'o': h/2}
+   request.xml = BOX_MODEL.format(**dict)
    node.get_logger().info(f"Making request...")
    future = client.call_async(request)
    while not future.done():

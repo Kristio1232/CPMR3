@@ -23,7 +23,7 @@ def main(args=None):
 
     for o in map.keys():
         node.get_logger().info(f"Populating map with {map[o]}")
-        make_obstacle(node, o, map[o]['x'], map[o]['y'], 1.0, map[o]['r'])
+        make_obstacle(node, o, map[o]['x'], map[o]['y'], 1.0, map[o]['w'], map[o]['l'])
     node.destroy_node()
     rclpy.shutdown()
     
