@@ -124,7 +124,7 @@ def example_angular_action_movement(base, angles=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     return finished
 
 
-def movement_action(base, base_cyclic):
+def example_angular_action_movement(base, base_cyclic):
     
     print("Starting Cartesian action movement ...")
     action = Base_pb2.Action()
@@ -179,8 +179,7 @@ def main():
 
         success &= example_move_to_home_position(base)
         
-        success &= movement_action(base, [0,0,0,0,0,0])
-
+        success &= example_angular_action_movement(base, [0,0,0,0,0,0])
 
         set_gripper(base, 0.0)
         time.sleep(2)
