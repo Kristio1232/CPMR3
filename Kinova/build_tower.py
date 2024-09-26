@@ -132,7 +132,7 @@ def movement_action(base, base_cyclic):
     action.application_data = ""
 
     feedback = base_cyclic.RefreshFeedback()
-    print("Feedback: " + feedback)
+    # print("Feedback: " + feedback)
 
     cartesian_pose = action.reach_pose.target_pose
     cartesian_pose.x = feedback.base.tool_pose_x          # (meters)
