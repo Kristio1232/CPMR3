@@ -174,7 +174,6 @@ def main():
         base = BaseClient(router)
         base_cyclic = BaseCyclicClient(router)
 
-        # Example core
         success = True
         set_gripper(base, 0.0)
         time.sleep(2)
