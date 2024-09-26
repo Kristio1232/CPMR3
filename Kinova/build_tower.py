@@ -124,7 +124,7 @@ def example_angular_action_movement(base, angles=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     return finished
 
 
-def example_angular_action_movement(base, base_cyclic):
+def example_cartesian_action_movement(base, base_cyclic):
     
     print("Starting Cartesian action movement ...")
     action = Base_pb2.Action()
