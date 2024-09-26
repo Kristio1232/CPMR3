@@ -176,14 +176,53 @@ def main():
 
         # Example core
         success = True
-
-        success &= example_move_to_home_position(base)
-        
-        success &= example_angular_action_movement(base, [0,0,0,0,0,0])
-
         set_gripper(base, 0.0)
         time.sleep(2)
         success &= example_move_to_home_position(base)
+        
+        #First Block
+        success &= example_angular_action_movement(base, [48,-58,78,0,0,0])
+        
+        set_gripper(base, 1.0)
+        time.sleep(2)
+        success &= example_angular_action_movement(base, [0,0,78,0,0,0])
+        
+        # Stack Spot
+        success &= example_angular_action_movement(base, [0,-58,78,0,0,0])
+        set_gripper(base, 0.0)
+        time.sleep(2)
+        
+        # No hit
+        success &= example_angular_action_movement(base, [0,0,60,0,0,0])
+        
+        # 2 Block
+        success &= example_angular_action_movement(base, [-4,-37,126,0,0,0])
+        set_gripper(base, 1.0)
+        time.sleep(2)
+        
+        success &= example_angular_action_movement(base, [0,0,126,0,0,0])
+        
+        # Stack Spot
+        success &= example_angular_action_movement(base, [0,-52,83,0,0,0])
+        
+        set_gripper(base, 0.0)
+        time.sleep(2)
+        
+        # Reset For next
+        success &= example_angular_action_movement(base, [0,-40,80,0,0,0])
+        
+        # 3 Block
+        success &= example_angular_action_movement(base, [-9,-47,98,0,0,30])
+        set_gripper(base, 1.0)
+        time.sleep(2)
+        
+        # Reset and setup
+        success &= example_angular_action_movement(base, [0,-40,80,0,0,0])
+        
+        # Last Drop
+        success &= example_angular_action_movement(base, [0,-47,84,0,0,0])
+        set_gripper(base, 0.0)
+        time.sleep(2)
 
         return 0 if success else 1
 
