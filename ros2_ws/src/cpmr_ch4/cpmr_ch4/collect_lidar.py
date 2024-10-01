@@ -64,11 +64,11 @@ class CollectLidar(Node):
         
         for r in enumerate(ranges):
             # self.get_logger().info(f"Range {r}")
-            t = self.cur_t + angle_min + r[0] * angle_increment 
+            scan_t = self.cur_t + angle_min + r[0] * angle_increment 
             if r[1] < 10:
                 self.get_logger().info(f"Range {r}")
-                row = int(int(self._HEIGHT/2) - (self.cur_y + r[1] * math.sin(t)) / self._M_PER_PIXEL)
-                col = int(int(self._WIDTH/2) + (self.cur_x + r[1] * math.cos(t)) / self._M_PER_PIXEL)
+                row = int(int(self._HEIGHT/2) - (self.cur_y + r[1] * math.sin(scan_t)) / self._M_PER_PIXEL)
+                col = int(int(self._WIDTH/2) + (self.cur_x + r[1] * math.cos(scan_t)) / self._M_PER_PIXEL)
                 self.get_logger().info(f"Map {row} {col}")
                 if (row >= 0) and (col >= 0) and (row < self._HEIGHT) and (col < self._WIDTH):
                     self._map[row, col] = 200
