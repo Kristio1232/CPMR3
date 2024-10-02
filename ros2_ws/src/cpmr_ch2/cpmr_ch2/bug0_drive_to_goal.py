@@ -94,7 +94,7 @@ class MoveToGoal(Node):
             obj_x, obj_y, obj_r = self._map[o]['x'], self._map[o]['y'], self._map[o]['r']
             obj_dist = math.sqrt((cur_x - obj_x)**2 + (cur_y - obj_y)**2)
             self.get_logger().info(f"Obstacle States {o} {obj_dist}")
-            if obj_dist <= obj_r + 1:  # 0.5 is a safety margin
+            if obj_dist <= obj_r + 0.3:  # 0.5 is a safety margin
                 obstacle_detected = True
                 break
 
