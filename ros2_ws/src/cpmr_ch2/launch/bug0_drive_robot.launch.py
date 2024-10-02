@@ -16,7 +16,7 @@ def generate_launch_description():
         DeclareLaunchArgument('cmd_gain', default_value = '5.0', description = 'controller gain'),
         Node(
             package = 'cpmr_ch2',
-            executable = 'drive_to_goal',
+            executable = 'bug0_drive_to_goal',
             name = 'bug0_drive_to_goal',
             parameters = [
                 {'map' : LaunchConfiguration('map')},
