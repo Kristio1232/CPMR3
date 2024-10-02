@@ -83,8 +83,8 @@ class MoveToGoal(Node):
 
         twist = Twist()
         obstacle_detected = False
-        for obj_name, obj_data in self._map.items():
-            obj_x, obj_y, obj_r = obj_data['x'], obj_data['y'], obj_data['r']
+        for o in self._map.keys():
+            obj_x, obj_y, obj_r = self._map[o]['x'], self._map[o]['y'], self._map[o]['r']
             obj_dist = math.sqrt((cur_x - obj_x)**2 + (cur_y - obj_y)**2)
             self.get_logger().info(f"Obstacle States {obj_name} {obj_dist}")
             if obj_dist <= obj_r + 1:  # 0.5 is a safety margin
