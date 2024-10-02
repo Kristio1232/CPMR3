@@ -91,6 +91,9 @@ class MoveToGoal(Node):
                 break
 
         if obstacle_detected:
+            angle_to_obj = math.atan2(obj_y - cur_y, obj_x - cur_x)
+            tangent_angle = angle_to_obj + math.pi/2
+
             # Obstacle avoidance: follow the boundary
             x_tangent = math.cos(tangent_angle)
             y_tangent = math.sin(tangent_angle)
@@ -102,7 +105,7 @@ class MoveToGoal(Node):
             # Transform to robot's coordinate frame
             twist.linear.x = x * math.cos(cur_t) + y * math.sin(cur_t)
             twist.linear.y = -x * math.sin(cur_t) + y * math.cos(cur_t)
-
+            self.get_logger().info(f"Obstacle detected")
         elif dist > max_pos_err:
             x = max(min(x_diff * vel_gain, max_vel), -max_vel)
             y = max(min(y_diff * vel_gain, max_vel), -max_vel)
