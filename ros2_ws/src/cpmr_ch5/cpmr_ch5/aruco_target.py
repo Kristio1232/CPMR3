@@ -68,6 +68,7 @@ class ArucoTarget(Node):
         self._bridge = CvBridge()
 
         dict = ArucoTarget._DICTS.get(tag_set.lower(), None)
+        self.get_logger().info(f'Dict info: {dict}')
         if dict is None:
             self.get_logger().error(f'ARUCO tag set {tag_set} not found')
         else:
