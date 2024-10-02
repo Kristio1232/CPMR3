@@ -40,6 +40,7 @@ class MoveToGoal(Node):
         self.get_logger().info(f'{self.get_name()} created')
 
         self.declare_parameter('map', 'default.yaml')
+        map_name = node.get_parameter('map').get_parameter_value().string_value
         package_path = get_package_share_directory('cpmr_ch2')
         try:
             with open(f"{package_path}/{map_name}") as fd:
