@@ -17,8 +17,9 @@ def generate_launch_description():
         Node(
             package = 'cpmr_ch2',
             executable = 'drive_to_goal',
-            name = 'drive_to_goal',
+            name = 'bug0_drive_to_goal',
             parameters = [
+                {'map' : LaunchConfiguration('map')},
                 {'goal_x' : LaunchConfiguration('goal_x')},
                 {'goal_y' : LaunchConfiguration('goal_y')},
                 {'goal_t' : LaunchConfiguration('goal_t')},
