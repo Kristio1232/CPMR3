@@ -8,11 +8,10 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument('map', default_value = 'default.json', description = 'Map name'),
         DeclareLaunchArgument('goal_x', default_value = '0.0', description = 'goal (x)'),
         DeclareLaunchArgument('goal_y', default_value = '0.0', description = 'goal (y)'),
         DeclareLaunchArgument('goal_t', default_value = '0.0', description = 'goal (t)'),
-         DeclareLaunchArgument('max_vel', default_value = '0.5', description = 'maximum velocity'),
+        DeclareLaunchArgument('max_vel', default_value = '0.5', description = 'maximum velocity'),
         DeclareLaunchArgument('cmd_gain', default_value = '5.0', description = 'controller gain'),
         Node(
             package = 'cpmr_ch2',

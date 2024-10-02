@@ -37,15 +37,6 @@ class MoveToGoal(Node):
         super().__init__('move_robot_to_goal')
         self.get_logger().info(f'{self.get_name()} created')
 
-        self.declare_parameter('map', 'default.json')
-        package_path = get_package_share_directory('cpmr_ch2')
-        try:
-            with open(f"{package_path}/{map_name}") as fd:
-                self._map = json.load(fd)
-        except Exception as e:
-            self.get_logger().error(f"Unable to find/parse map in {package_path}/{map_name}")
-            sys.exit(1)
-
         self.declare_parameter('goal_x', 0.0)
         self._goal_x = self.get_parameter('goal_x').get_parameter_value().double_value
         self.declare_parameter('goal_y', 0.0)
@@ -82,28 +73,7 @@ class MoveToGoal(Node):
         dist = math.sqrt(x_diff * x_diff + y_diff * y_diff)
 
         twist = Twist()
-        obstacle_detected = False
-        for obj_name, obj_data in self._map.items():
-            obj_x, obj_y, obj_r = obj_data['x'], obj_data['y'], obj_data['r']
-            obj_dist = math.sqrt((cur_x - obj_x)**2 + (cur_y - obj_y)**2)
-            if obj_dist <= obj_r + 0.5:  # 0.5 is a safety margin
-                obstacle_detected = True
-                break
-
-        if obstacle_detected:
-            # Obstacle avoidance: follow the boundary
-            angle_to_obj = math.atan2(obj_y - cur_y, obj_x - cur_x)
-            tangent_angle = angle_to_obj + math.pi/2  # Rotate 90 degrees
-
-            # Move along the tangent
-            twist.linear.x = max_vel * math.cos(tangent_angle - cur_t)
-            twist.linear.y = max_vel * math.sin(tangent_angle - cur_t)
-
-            # Rotate to keep the obstacle on the right
-            angle_diff = math.atan2(math.sin(tangent_angle - cur_t), math.cos(tangent_angle - cur_t))
-            twist.angular.z = max(min(angle_diff * vel_gain, max_vel), -max_vel)
-
-        elif dist > max_pos_err:
+        if dist > max_pos_err:
             x = max(min(x_diff * vel_gain, max_vel), -max_vel)
             y = max(min(y_diff * vel_gain, max_vel), -max_vel)
             twist.linear.x = x * math.cos(cur_t) + y * math.sin(cur_t)
