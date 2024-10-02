@@ -37,11 +37,12 @@ class MoveToGoal(Node):
         super().__init__('move_robot_to_goal')
         self.get_logger().info(f'{self.get_name()} created')
 
-        self.declare_parameter('map', 'default.json')
+        self.declare_parameter('map', 'default.yaml')
         package_path = get_package_share_directory('cpmr_ch2')
         try:
             with open(f"{package_path}/{map_name}") as fd:
                 self._map = json.load(fd)
+                self.get_logger().info(f"Map: {self._map}")
         except Exception as e:
             self.get_logger().error(f"Unable to find/parse map in {package_path}/{map_name}")
             sys.exit(1)
