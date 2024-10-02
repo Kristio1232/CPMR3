@@ -92,16 +92,16 @@ class MoveToGoal(Node):
 
         if obstacle_detected:
             # Obstacle avoidance: follow the boundary
-            angle_to_obj = math.atan2(obj_y - cur_y, obj_x - cur_x)
-            tangent_angle = angle_to_obj + math.pi/2  # Rotate 90 degrees
+            x_tangent = math.cos(tangent_angle)
+            y_tangent = math.sin(tangent_angle)
 
-            # Move along the tangent
-            twist.linear.x = max_vel * math.cos(tangent_angle - cur_t)
-            twist.linear.y = max_vel * math.sin(tangent_angle - cur_t)
+            # Apply velocity gain and limits
+            x = max(min(x_tangent * vel_gain, max_vel), -max_vel)
+            y = max(min(y_tangent * vel_gain, max_vel), -max_vel)
 
-            # Rotate to keep the obstacle on the right
-            angle_diff = math.atan2(math.sin(tangent_angle - cur_t), math.cos(tangent_angle - cur_t))
-            twist.angular.z = max(min(angle_diff * vel_gain, max_vel), -max_vel)
+            # Transform to robot's coordinate frame
+            twist.linear.x = x * math.cos(cur_t) + y * math.sin(cur_t)
+            twist.linear.y = -x * math.sin(cur_t) + y * math.cos(cur_t)
 
         elif dist > max_pos_err:
             x = max(min(x_diff * vel_gain, max_vel), -max_vel)
