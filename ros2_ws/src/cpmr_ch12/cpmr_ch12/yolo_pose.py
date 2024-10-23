@@ -6,8 +6,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import math
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-import demo
+
 from rclpy.node import Node
 from ultralytics import YOLO
 from cv_bridge import CvBridge
@@ -98,6 +97,8 @@ class YOLO_Pose(Node):
                 cv2.waitKey(1)
     
 def main(args=None):
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+    import demo
     rclpy.init(args=args)
     node = YOLO_Pose()
     try:
