@@ -210,8 +210,8 @@ def move_helper(base, base_cyclic, x, y, z):
     return finished
 
 def move_xyz():
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-    import utilities
+    # sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+    # import utilities
 
     # Parse arguments
     args = parseConnectionArguments()
