@@ -90,7 +90,7 @@ class YOLO_Pose(Node):
             if len(keypoints) > 0:
                 for i in range(len(keypoints)):
                     self.get_logger().info(f'{self.get_name()}  {YOLO_Pose._BODY_PARTS[keypoints[i][0]]} {keypoints[i]}')
-
+                move_xyz()
                 # Visualize results on frame        
                 annotated_frame = results[0].plot()
                 cv2.imshow('Results', annotated_frame)
