@@ -11,7 +11,7 @@ class OpenCVCamera(Node):
         super().__init__('opencv_camera')
 
         try:
-            self._camera =  cv2.VideoCapture(0, cv2.CAP_V4L2)
+            self._camera =  cv2.VideoCapture(4, cv2.CAP_V4L2)
         except Exception as e:
             self.get_logger().error(f'Unable to open camera 0')
             sys.exit(1)
