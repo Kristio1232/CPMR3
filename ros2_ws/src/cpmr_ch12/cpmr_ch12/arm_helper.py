@@ -19,6 +19,7 @@ from kortex_api.autogen.client_stubs.BaseClientRpc import BaseClient
 from kortex_api.autogen.client_stubs.BaseCyclicClientRpc import BaseCyclicClient
 
 from kortex_api.autogen.messages import Base_pb2, BaseCyclic_pb2, Common_pb2
+from .utilities import parseConnectionArguments, DeviceConnection
 
 
 # Maximum allowed waiting time during actions (in seconds)
@@ -213,10 +214,10 @@ def move_xyz():
     import utilities
 
     # Parse arguments
-    args = utilities.parseConnectionArguments()
+    args = parseConnectionArguments()
     
     # Create connection to the device and get the router
-    with utilities.DeviceConnection.createTcpConnection(args) as router:
+    with DeviceConnection.createTcpConnection(args) as router:
 
         # Create required services
         base = BaseClient(router)
