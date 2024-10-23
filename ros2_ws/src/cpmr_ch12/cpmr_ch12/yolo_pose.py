@@ -6,6 +6,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import math
+from .arm_helper import move_xyz
 
 from rclpy.node import Node
 from ultralytics import YOLO
@@ -89,7 +90,6 @@ class YOLO_Pose(Node):
             if len(keypoints) > 0:
                 for i in range(len(keypoints)):
                     self.get_logger().info(f'{self.get_name()}  {YOLO_Pose._BODY_PARTS[keypoints[i][0]]} {keypoints[i]}')
-                demo.success &= example_angular_action_movement(base, [0,0,0,0,0,0])
 
                 # Visualize results on frame        
                 annotated_frame = results[0].plot()
@@ -97,8 +97,6 @@ class YOLO_Pose(Node):
                 cv2.waitKey(1)
     
 def main(args=None):
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-    import demo
     rclpy.init(args=args)
     node = YOLO_Pose()
     try:
