@@ -243,12 +243,8 @@ class robot_arm():
 
             success = True
             while success:
-                cartesian_pose = action.reach_pose.target_pose
-                cartesian_pose.x = feedback.base.tool_pose_x          # (meters)
-                cartesian_pose.y = feedback.base.tool_pose_y   # (meters)
-                cartesian_pose.z = feedback.base.tool_pose_z    # (meters)
-                if (goal_x != cartesian_pose.x or goal_y != cartesian_pose.y or not self.moving):
-                    success &= move_to_pickup(base, base_cyclic, goal_x, goal_y, 0.1)
+                
+                success &= move_to_pickup(base, base_cyclic, goal_x, goal_y, 0.1)
 
         return 0 if success else 1
 
@@ -260,30 +256,34 @@ class robot_arm():
         action.application_data = ""
     
         feedback = base_cyclic.RefreshFeedback()
-        cartesian_pose = action.reach_pose.target_pose
-        cartesian_pose.x = x/100    # (meters)
-        cartesian_pose.y = y/100    # (meters)
-        cartesian_pose.z = z/100    # (meters)
-        cartesian_pose.theta_x = 2.7533175945281982 # (degrees)
-        cartesian_pose.theta_y = 179.1836395263672 # (degrees)
-        cartesian_pose.theta_z = 87.59925079345703 # (degrees)
+        x = feedback.base.tool_pose_x          # (meters)
+        y = feedback.base.tool_pose_y   # (meters)
+        z = feedback.base.tool_pose_z    # (meters)
+        if (goal_x != x or goal_y != y or not self.moving):
+            cartesian_pose = action.reach_pose.target_pose
+            cartesian_pose.x = x/100    # (meters)
+            cartesian_pose.y = y/100    # (meters)
+            cartesian_pose.z = z/100    # (meters)
+            cartesian_pose.theta_x = 2.7533175945281982 # (degrees)
+            cartesian_pose.theta_y = 179.1836395263672 # (degrees)
+            cartesian_pose.theta_z = 87.59925079345703 # (degrees)
 
-        e = threading.Event()
-        notification_handle = base.OnNotificationActionTopic(
-            check_for_end_or_abort(e),
-            Base_pb2.NotificationOptions()
-        )
+            e = threading.Event()
+            notification_handle = base.OnNotificationActionTopic(
+                check_for_end_or_abort(e),
+                Base_pb2.NotificationOptions()
+            )
 
-        print("Executing action")
-        base.ExecuteAction(action)
+            print("Executing action")
+            base.ExecuteAction(action)
 
-        print("Waiting for movement to finish ...")
-        finished = e.wait(TIMEOUT_DURATION)
-        base.Unsubscribe(notification_handle)
-        self.moving = False
+            print("Waiting for movement to finish ...")
+            finished = e.wait(TIMEOUT_DURATION)
+            base.Unsubscribe(notification_handle)
+            self.moving = False
 
-        if finished:
-            print("Cartesian movement completed")
-        else:
-            print("Timeout on action notification wait")
-        return finished
+            if finished:
+                print("Cartesian movement completed")
+            else:
+                print("Timeout on action notification wait")
+            return finished
