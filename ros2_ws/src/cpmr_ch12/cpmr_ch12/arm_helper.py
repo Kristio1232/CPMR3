@@ -244,11 +244,11 @@ class robot_arm():
             success = True
             while success:
                 
-                success &= move_to_pickup(base, base_cyclic, goal_x, goal_y, 0.1)
+                success &= self.move_to_pickup(base, base_cyclic, self.goal_x, self.goal_y, 0.1)
 
         return 0 if success else 1
 
-    def move_to_pickup(base, base_cyclic, x, y, z):
+    def move_to_pickup(self, base, base_cyclic, x, y, z):
         print(f"Moving to {x}, {y}, and {z} ...")
         self.moving = True
         action = Base_pb2.Action()
@@ -258,8 +258,8 @@ class robot_arm():
         feedback = base_cyclic.RefreshFeedback()
         x = feedback.base.tool_pose_x          # (meters)
         y = feedback.base.tool_pose_y   # (meters)
-        z = feedback.base.tool_pose_z    # (meters)
-        if (goal_x != x or goal_y != y or not self.moving):
+        # z = feedback.base.tool_pose_z    # (meters)
+        if (self.goal_x != x or self.goal_y != y or not self.moving):
             cartesian_pose = action.reach_pose.target_pose
             cartesian_pose.x = x/100    # (meters)
             cartesian_pose.y = y/100    # (meters)
