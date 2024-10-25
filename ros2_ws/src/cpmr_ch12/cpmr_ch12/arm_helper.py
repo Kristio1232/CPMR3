@@ -233,18 +233,22 @@ class robot_arm():
     def __init__(self):
         self.goal_x = 0.0
         self.goal_y = 0.2
-        self.moving = false
-        base = BaseClient(router)
-        base_cyclic = BaseCyclicClient(router)
+        self.moving = False
+        args = parseConnectionArguments()
+    
+        # Create connection to the device and get the router
+        with DeviceConnection.createTcpConnection(args) as router:
+            base = BaseClient(router)
+            base_cyclic = BaseCyclicClient(router)
 
-        success = True
-        while success:
-            cartesian_pose = action.reach_pose.target_pose
-            cartesian_pose.x = feedback.base.tool_pose_x          # (meters)
-            cartesian_pose.y = feedback.base.tool_pose_y   # (meters)
-            cartesian_pose.z = feedback.base.tool_pose_z    # (meters)
-            if (goal_x != cartesian_pose.x or goal_y != cartesian_pose.y or not self.moving):
-                success &= move_to_pickup(base, base_cyclic, goal_x, goal_y, 0.1)
+            success = True
+            while success:
+                cartesian_pose = action.reach_pose.target_pose
+                cartesian_pose.x = feedback.base.tool_pose_x          # (meters)
+                cartesian_pose.y = feedback.base.tool_pose_y   # (meters)
+                cartesian_pose.z = feedback.base.tool_pose_z    # (meters)
+                if (goal_x != cartesian_pose.x or goal_y != cartesian_pose.y or not self.moving):
+                    success &= move_to_pickup(base, base_cyclic, goal_x, goal_y, 0.1)
 
         return 0 if success else 1
 
