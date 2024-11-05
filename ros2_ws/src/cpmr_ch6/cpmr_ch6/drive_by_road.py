@@ -51,16 +51,19 @@ class DriveByRoad(Node):
         image = self._bridge.imgmsg_to_cv2(msg, "bgr8") 
         cv2.imshow('window', image)
         key = cv2.waitKey(3)
-
+        # *
         if key == 106:
             self.turn_left()
             self._curdir = DriveByRoad._TURNING_LEFT
+        # +
         elif key == 107:
             self.go_straight()
             self._curdir = DriveByRoad._FORWARD
+        # |
         elif key == 108:
             self.turn_right()
             self._curdir = DriveByRoad._TURNING_RIGHT
+        # Space
         elif key == 32:
             self.stop()
             self._curdir = None
@@ -72,7 +75,7 @@ class DriveByRoad(Node):
             self._curdir = DriveByRoad._FORWARD
             self.go_straight()
         elif key == 120:
-            self.get_logger().info(f"Stop recording left {self._left_id} forward {self._forward_id} right {self._right_id}")
+            self.get_logger().info(f"{self.self._output}Stop recording left {self._left_id} forward {self._forward_id} right {self._right_id}")
             self._recording = False
 
         if self._recording:
