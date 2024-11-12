@@ -8,6 +8,55 @@ from rcl_interfaces.msg import SetParametersResult
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
+from std_srvs.srv import SetBool
+from gazebo_msgs.srv import SpawnEntity, DeleteEntity
+
+
+
+def make_marker(node, id, x0, y0, h, r):
+   CYLINDER_MODEL = """
+       <sdf version="1.6"> 				\
+         <world name="default">                         \
+           <model name="obstacle"> 			\
+             <static>true</static> 			\
+             <link name="all">                        	\
+               <collision name="one">			\
+                 <pose>0 0 {o} 0 0 0</pose>    		\
+                 <geometry>				\
+                   <cylinder>                       	\
+                     <radius>0</radius>            	\
+                     <length>0</length>            	\
+                   </cylinder>   			\
+                  </geometry>				\
+               </collision>				\
+               <visual name="two">			\
+                 <pose>0 0 {o} 0 0 0</pose>    		\
+                 <geometry>				\
+                   <cylinder>                           \
+                     <radius>{r}</radius>               \
+                     <length>{h}</length>               \
+                   </cylinder>                          \
+                 </geometry>				\
+               </visual>				\
+             </link>                                    \
+           </model>					\
+         </world>                                       \
+       </sdf>"""
+
+   client = node.create_client(SpawnEntity, "/spawn_entity")
+   node.get_logger().info("Connecting to /spawn_entity service...")
+   client.wait_for_service()
+   node.get_logger().info("...connected")
+   request = SpawnEntity.Request()
+   request.name = id
+   request.initial_pose.position.x = float(x0)
+   request.initial_pose.position.y = float(y0)
+   request.initial_pose.position.z = float(0)
+   dict = {'h' : h, 'r':r, 'o': h/2}
+   request.xml = CYLINDER_MODEL.format(**dict)
+   node.get_logger().info(f"Making request...")
+   client.call_async(request)
+  
 
 def euler_from_quaternion(quaternion):
     """
@@ -47,6 +96,16 @@ class FSM(Node):
 
         self._subscriber = self.create_subscription(Odometry, "/odom", self._listener_callback, 1)
         self._publisher = self.create_publisher(Twist, "/cmd_vel", 1)
+        self.create_service(SetBool, '/startup', self._startup_callback)
+        self.client = self.create_client(SpawnEntity, "/spawn_entity")
+        self.get_logger().info("Connecting to /spawn_entity service...")
+        self.client.wait_for_service()
+        self.get_logger().info("Connected")
+        self._last_x = 0.0
+        self._last_y = 0.0
+        self._last_id = 0
+
+        make_marker(self, "t"+str(self._last_id), self._last_x, self._last_y, 0.25, 0.01)
 
         # the blackboard
         self._cur_x = 0.0
@@ -56,6 +115,22 @@ class FSM(Node):
         self._start_time = self.get_clock().now().nanoseconds * 1e-9
         self._points = [[0, 0, 0], [0, 5, 0], [5, 5, math.pi/2], [5, 0, -math.pi/2]]
         self._point = 0
+        self._run = False
+
+    def _startup_callback(self, request, resp):
+        self.get_logger().info(f'Got a request {request}')
+        if request.data:
+            self.get_logger().info(f'fsm starting')
+            self._run = True
+            resp.success = True
+            resp.message = "Architecture running"
+        else:
+            self.get_logger().info(f'fsm suspended')
+            self._run = True
+            resp.success = True
+            resp.message = "Architecture suspended"
+        return resp
+           
 
     def _short_angle(angle):
         if angle > math.pi:
@@ -110,26 +185,26 @@ class FSM(Node):
             self._publisher.publish(twist)
             return False
 
-        self.get_logger().info(f'{self.get_name()} at goal pose')
+        self.get_logger().info(f'at goal pose')
         self._publisher.publish(twist)
         return True
 
 
     def _do_state_at_start(self):
-        self.get_logger().info(f'{self.get_name()} in start state')
-        now = self.get_clock().now().nanoseconds * 1e-9
-        if now > (self._start_time + 2):
+        self.get_logger().info(f'in start state')
+        if self._run:
+            self.get_logger().info(f'Starting...')
             self._cur_state = FSM_STATES.HEADING_TO_TASK
 
     def _do_state_heading_to_task(self):
-        self.get_logger().info(f'{self.get_name()} heading to task {self._point}')
+        self.get_logger().info(f'heading to task {self._point}')
         if self._drive_to_goal(self._points[self._point][0], self._points[self._point][1], self._points[self._point][2]): 
             self._point = self._point + 1
             if self._point >= len(self._points):
                 self._cur_state = FSM_STATES.RETURNING_FROM_TASK
 
     def _do_state_returning_from_task(self):
-        self.get_logger().info(f'{self.get_name()} returning from task ')
+        self.get_logger().info(f'returning from task ')
         if self._drive_to_goal(0, 0, 0):
             self._publisher.publish(Twist())
             self._cur_state = FSM_STATES.TASK_DONE
@@ -151,6 +226,13 @@ class FSM(Node):
 
     def _listener_callback(self, msg):
         pose = msg.pose.pose
+
+        d2 = (pose.position.x - self._last_x) * (pose.position.x - self._last_x) + (pose.position.y - self._last_y) * (pose.position.y - self._last_y)
+        if d2 > 0.5 * 0.5:
+             self._last_id = self._last_id + 1
+             self._last_x = pose.position.x
+             self._last_y = pose.position.y
+             make_marker(self, "t"+str(self._last_id), self._last_x, self._last_y, 0.25, 0.01)
 
         roll, pitch, yaw = euler_from_quaternion(pose.orientation)
         self._cur_x = pose.position.x

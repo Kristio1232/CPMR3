@@ -8,8 +8,8 @@ from launch_ros.actions import Node
 import xacro
 
 def generate_launch_description():
-    urdf = os.path.join(get_package_share_directory('cpmr_ch8'), 'scout-camera.urdf.xacro')
-    robot_desc = xacro.process_file(urdf, mappings={'name' : 'camera_robot'}).toxml()
+    urdf = os.path.join(get_package_share_directory('cpmr_ch8'), 'scout-laser-camera.urdf.xacro')
+    robot_desc = xacro.process_file(urdf, mappings={'name' : 'subsumption_robot'}).toxml()
 
     return LaunchDescription([
         IncludeLaunchDescription(
@@ -30,11 +30,12 @@ def generate_launch_description():
              executable='spawn_entity.py',
              name='urdf_spawner',
              output='screen',
-             arguments=["-topic", "/robot_description",  "-entity",  "camera_robot"]),
+             arguments=["-topic", "/robot_description",  "-entity",  "subsumption_robot"]),
         Node(
              package='cpmr_ch8',
-             executable='view_camera',
-             name='view_camera',
+             executable='subsumption',
+             name='subsumption',
              output='screen'),
+
     ])
 
