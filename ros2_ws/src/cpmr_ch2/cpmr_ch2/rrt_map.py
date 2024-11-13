@@ -7,7 +7,9 @@ import time
 from scipy.spatial import KDTree
 
 
-
+numberOfNodes = 1500
+fileName = "plan2.png"
+map = cv2.imread(fileName)
 
 class point:
     def __init__(self, x, y,next = None, prev = None,radius = 1):
@@ -17,7 +19,6 @@ class point:
         self.prev = prev
         self.radius = radius
         self.color = (127,127,0)
-        self.map = cv2.imread(fileName)
 
 
 
@@ -105,7 +106,7 @@ def findClosestNodeToGraph(exploredVertexList, listOfVertix):
     return newConnection
 
 def buildMap():
-    map = cv2.imread("NewFloorPlanEddited.jpg")
+    map = cv2.imread("plan2.png")
     print(map)
     randomPoints = [(np.random.randint(10, map.shape[1]-10), np.random.randint(10, map.shape[0]-10)) for _ in range(numberOfNodes)]
     listOfVertix = []
@@ -171,6 +172,7 @@ def mainRead(start_x = 250, start_y = 250, finish_x = 15, finish_y = 15):
         newNode = newNode.prev
 
     cv2.imwrite("_output_image"+fileName,map)
+    return newNode
 
 def movingInRos(listOfNodes):
 
@@ -192,9 +194,7 @@ def movingInRos(listOfNodes):
         time.sleep(1.0)
 
 
-numberOfNodes = 1500
-fileName = "house-plan.png"
-map = cv2.imread(fileName)
-listOfNodes = mainRead(start_x=150,start_y=500,finish_x=600,finish_y=350)
+
+listOfNodes = mainRead(start_x=60,start_y=250,finish_x=9,finish_y=5)
 x = input("____________________\n PRESS TO CONINTUE \n________________\n")
 movingInRos(listOfNodes)
