@@ -64,7 +64,10 @@ class ArucoTarget(Node):
 
         self.create_subscription(Image, self._image_topic, self._image_callback, 1)
         self.create_subscription(CameraInfo, self._info_topic, self._info_callback, 1)
-
+        self._subscriber = self.create_subscription(Odometry, "/odom", self._listener_callback, 1)
+        self._publisher = self.create_publisher(Twist, "/cmd_vel", 1)
+        self._target_visible = False
+        self._target_position = None
         self._bridge = CvBridge()
 
         dict = ArucoTarget._DICTS.get(tag_set.lower(), None)
@@ -82,6 +85,26 @@ class ArucoTarget(Node):
             self._image = None
             self._cameraMatrix = None
             self.get_logger().info(f"using dictionary {tag_set}")
+
+    def _listener_callback(self):
+        cmd_vel = Twist()
+
+        if not self._target_visible:
+            cmd_vel.angular.z = 0.5
+        else:
+            target_x = self._target_position[2]
+            target_y = -self._target_position[0]
+
+            distance = math.sqrt(target_x**2 + target_y**2)
+            desired_distance = 1.0
+
+            if abs(distance - desired_distance) > 0.1:
+                cmd_vel.linear.x = 0.2 * (distance - desired_distance)
+            
+            if abs(target_y) > 0.1:
+                cmd_vel.angular.z = -0.3 * target_y
+
+        self._cmd_vel_pub.publish(cmd_vel)
 
     def _info_callback(self, msg):
         if msg.distortion_model != "plumb_bob":
@@ -104,7 +127,7 @@ class ArucoTarget(Node):
         if self._cameraMatrix is None:
             self.get_logger().info(f"We have not yet received a camera_info message")
             return
-
+        
         if parse(cv2.__version__) < parse('4.7.0'):
             rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners, self._target_width, self._cameraMatrix, self._distortion)
         else:
@@ -116,6 +139,13 @@ class ArucoTarget(Node):
                 result = cv2.aruco.drawAxis(result, self._cameraMatrix, self._distortion, r, t, self._target_width)
             else:
                 result = cv2.drawFrameAxes(result, self._cameraMatrix, self._distortion, r, t, self._target_width)
+
+        if ids is None:
+            self._target_visible = False
+            self._target_position = None
+        else:
+            self._target_visible = True
+            self._target_position = tvec[0][0]
         cv2.imshow('window', result)
         cv2.waitKey(3)
 

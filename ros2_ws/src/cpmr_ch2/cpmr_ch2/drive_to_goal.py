@@ -48,7 +48,7 @@ class MoveToGoal(Node):
 
         self._subscriber = self.create_subscription(Odometry, "/odom", self._listener_callback, 1)
         self._publisher = self.create_publisher(Twist, "/cmd_vel", 1)
-
+        
 
     def _listener_callback(self, msg, vel_gain=5.0, max_vel=0.2, max_pos_err=0.05):
         pose = msg.pose.pose
