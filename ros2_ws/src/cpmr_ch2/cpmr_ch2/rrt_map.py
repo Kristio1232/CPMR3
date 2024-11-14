@@ -7,7 +7,7 @@ import time
 from scipy.spatial import KDTree
 
 
-numberOfNodes = 3000
+numberOfNodes = 1500
 fileName = "big_house.png"
 map = cv2.imread(fileName)
 
@@ -172,7 +172,8 @@ def mainRead(map, start_x = 250, start_y = 250, finish_x = 15, finish_y = 15):
         newNode = newNode.prev
 
     cv2.imwrite("_output_image"+fileName,map)
-    return newNode
+    return rrt
+
 
 def movingInRos(listOfNodes):
 
@@ -195,6 +196,6 @@ def movingInRos(listOfNodes):
 
 
 
-listOfNodes = mainRead(map, start_x=250,start_y=175,finish_x=900,finish_y=300)
+listOfNodes = mainRead(map, start_x=130,start_y=580,finish_x=900,finish_y=300)
 x = input("____________________\n PRESS TO CONINTUE \n________________\n")
 movingInRos(listOfNodes)
