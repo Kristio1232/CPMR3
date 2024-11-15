@@ -7,8 +7,8 @@ import time
 from scipy.spatial import KDTree
 
 
-numberOfNodes = 1500
-fileName = "plan2.png"
+numberOfNodes = 3000
+fileName = "big_house.png"
 map = cv2.imread(fileName)
 
 class point:
@@ -105,11 +105,11 @@ def findClosestNodeToGraph(exploredVertexList, listOfVertix):
         newConnection = bigBrainAlgo(exploredVertexList,listOfVertix)
     return newConnection
 
-def buildMap():
-    map = cv2.imread("plan2.png")
-    print(map)
+def buildMap(map):
+    
     randomPoints = [(np.random.randint(10, map.shape[1]-10), np.random.randint(10, map.shape[0]-10)) for _ in range(numberOfNodes)]
     listOfVertix = []
+    print(f"nodes: {numberOfNodes}")
     for i in range(0,numberOfNodes):
         v = point(x = randomPoints[i][0], y = randomPoints[i][1])
         if point_obst_overlap(map,v):
@@ -121,9 +121,9 @@ def buildMap():
     cv2.imwrite("_PrelineMap"+ fileName ,map)
     return listOfVertix
 
-def mainRead(start_x = 250, start_y = 250, finish_x = 15, finish_y = 15):
+def mainRead(map, start_x = 250, start_y = 250, finish_x = 15, finish_y = 15):
     
-    listOfVertix = buildMap()
+    listOfVertix = buildMap(map)
 
     exploredVertexList = []
 
@@ -195,6 +195,6 @@ def movingInRos(listOfNodes):
 
 
 
-listOfNodes = mainRead(start_x=60,start_y=250,finish_x=9,finish_y=5)
+listOfNodes = mainRead(map, start_x=250,start_y=175,finish_x=900,finish_y=300)
 x = input("____________________\n PRESS TO CONINTUE \n________________\n")
 movingInRos(listOfNodes)
