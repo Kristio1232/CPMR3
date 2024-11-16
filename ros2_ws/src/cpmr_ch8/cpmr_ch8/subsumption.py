@@ -24,6 +24,15 @@ class Subsumption(Node):
         twist.angular.z = max(min(t, max_thetav), 0.0)
 
         return twist
+    
+    def _stop_at_red(self, count = 2000, minr = 1.5):
+        if self._min_r < minr and self._redcolcount > count:
+            twist = Twist()
+            twist.linear.x = 0.0
+            twist.angular.z = 0.0
+            return twist
+        return None
+
 
     def _avoid_obstacle(self, minr = 1.5):
         """ if there is an obstacle within mind of the front of the robot, stop and rotate"""
@@ -79,8 +88,13 @@ class Subsumption(Node):
             return
         now = self.get_clock().now().nanoseconds
         wander = self._wander()
+        stop = self._stop_at_red()
         avoid = self._avoid_obstacle()
         red = self._get_red()
+        if stop is not None:
+            self.get_logger().info(f'{now}, avoiding')
+            self._publisher.publish(stop)
+            return
         if avoid is not None:
             self.get_logger().info(f'{now}, avoiding')
             self._publisher.publish(avoid)
