@@ -34,7 +34,7 @@ class Subsumption(Node):
         return None
 
 
-    def _avoid_obstacle(self, minr = 1.5):
+    def _avoid_obstacle(self, minr = 1.75):
         """ if there is an obstacle within mind of the front of the robot, stop and rotate"""
         if self._min_r < minr:
             twist = Twist()
