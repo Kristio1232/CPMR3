@@ -92,7 +92,7 @@ class Subsumption(Node):
         avoid = self._avoid_obstacle()
         red = self._get_red()
         if stop is not None:
-            self.get_logger().info(f'{now}, avoiding')
+            self.get_logger().info(f'{now}, stoping')
             self._publisher.publish(stop)
             return
         if avoid is not None:
