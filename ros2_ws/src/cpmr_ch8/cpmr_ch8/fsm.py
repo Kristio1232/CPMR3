@@ -113,7 +113,7 @@ class FSM(Node):
         self._cur_theta = 0.0
         self._cur_state = FSM_STATES.AT_START
         self._start_time = self.get_clock().now().nanoseconds * 1e-9
-        self._points = [[0, 0, 0], [0, 5, 0], [5, 5, math.pi/2], [5, 0, -math.pi/2]]
+        self._points = [[0, 0, 0], [-2, 0, 0], [0, -2, 0]]
         self._point = 0
         self._run = False
 
