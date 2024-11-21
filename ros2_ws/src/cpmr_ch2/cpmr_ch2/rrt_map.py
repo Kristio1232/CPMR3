@@ -95,9 +95,7 @@ def findClosestNodeToGraph(exploredVertexList, listOfVertix):
         if distance < smallestDistance and line_color_intersection(map, exploredV, listOfVertix[index]) == False:
 
             smallestDistance = distance
-            newConnection = (exploredV, listOfVertix[index])
-            print('NEW CONNECTION MADE')
-        
+            newConnection = (exploredV, listOfVertix[index])        
     
         if distance == 0:
             break
@@ -109,7 +107,6 @@ def buildMap(map):
     
     randomPoints = [(np.random.randint(10, map.shape[1]-10), np.random.randint(10, map.shape[0]-10)) for _ in range(numberOfNodes)]
     listOfVertix = []
-    print(f"nodes: {numberOfNodes}")
     for i in range(0,numberOfNodes):
         v = point(x = randomPoints[i][0], y = randomPoints[i][1])
         if point_obst_overlap(map,v):
@@ -151,13 +148,7 @@ def mainRead(map, start_x = 250, start_y = 250, finish_x = 15, finish_y = 15):
         exploredVertexList.append(newNode)
         listOfVertix.remove(newNode)
 
-
-        print('ELEMENTS IN LIST OF VERTIX: ', len(listOfVertix))
-        print('GRAPH NODE: ', graphNode.x, graphNode.y)
-        print('NEW NODE: ', newNode.x, newNode.y)
-        print('*******NODE ADDED TO RRT*******')
-
-        # check if we have reached the goal            
+           
         if newNode.x == finishPoint.x and newNode.y == finishPoint.y:
             print('FINISH POINT REACHED. BREAK OUT OF LOOP')
             break
@@ -189,13 +180,10 @@ def movingInRos(listOfNodes):
         print(f"{i[0]}, {i[1]}")
         command = f"ros2 param set /drive_to_goal newGoal \"{i[0]} & {i[1]}\"" 
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        print("Errors:", result.stderr)
-        print("Return code:", result.returncode)
-        print("Output:", result.stdout)
         time.sleep(1.0)
 
 
 
 listOfNodes = mainRead(map, start_x=130,start_y=580,finish_x=900,finish_y=300)
-x = input("____________________\n PRESS TO CONINTUE \n________________\n")
+x = input("PRESS TO CONINTUE")
 movingInRos(listOfNodes)
