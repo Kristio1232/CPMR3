@@ -56,7 +56,7 @@ class FSM(Node):
         self._last_y = 0.0
         self._last_id = 0
 
-        # the blackboard
+        # Blackboard variables
         self._cur_x = 0.0
         self._cur_y = 0.0
         self._cur_theta = 0.0
@@ -66,21 +66,39 @@ class FSM(Node):
         self._point = 0
         self._run = False
 
-    def _startup_callback(self, request, resp):
-        self.get_logger().info(f'Got a request {request}')
-        if request.data:
-            self.get_logger().info(f'fsm starting')
-            self._run = True
-            resp.success = True
-            resp.message = "Architecture running"
-        else:
-            self.get_logger().info(f'fsm suspended')
-            self._publisher.publish(Twist())
-            self._run = False
-            resp.success = True
-            resp.message = "Architecture suspended"
-        return resp
-           
+    def _drive_to_goal(self, goal_x, goal_y,
+                       heading0_tol=0.1,    # Reduced heading tolerance for precision
+                       range_tol=0.15):
+        """Return True iff we are at the goal, otherwise drive there"""
+
+        twist = Twist()
+        
+        x_diff = goal_x - self._cur_x
+        y_diff = goal_y - self._cur_y
+        dist = math.sqrt(x_diff * x_diff + y_diff * y_diff)
+        
+        if dist > range_tol:
+            self.get_logger().info(f'{self.get_name()} driving to goal with goal distance {dist}')
+            # Turn towards the goal
+            heading = math.atan2(y_diff, x_diff)
+            diff = FSM._short_angle(heading - self._cur_theta)
+
+            if abs(diff) > heading0_tol:
+                twist.angular.z = FSM._compute_speed(diff, 0.7, 0.05, 0.7) # Increased angular speed gain
+                self.get_logger().info(f'{self.get_name()} turning towards goal heading {heading} current {self._cur_theta} diff {diff} {twist.angular.z}')
+                self._publisher.publish(twist)
+                return False
+
+            twist.linear.x = FSM._compute_speed(dist, 0.7, 0.1, 0.2) # Increased max speed and decreased min speed
+            self._publisher.publish(twist)
+            self.get_logger().info(f'{self.get_name()} a distance {dist} from target velocity {twist.linear.x}')
+            return False
+
+        # Stop if at goal
+        twist.linear.x = twist.angular.z = 0.0 
+        self.get_logger().info(f'at goal pose')
+        self._publisher.publish(twist)
+        return True           
 
     def _short_angle(angle):
         if angle > math.pi:
@@ -95,38 +113,38 @@ class FSM(Node):
         speed = min(max_speed, max(min_speed, speed))
         return math.copysign(speed, diff)
         
-    def _drive_to_goal(self, goal_x, goal_y,
-                       heading0_tol = 0.15,
-                       range_tol = 0.15):
-        """Return True iff we are at the goal, otherwise drive there"""
+    # def _drive_to_goal(self, goal_x, goal_y,
+    #                    heading0_tol = 0.15,
+    #                    range_tol = 0.15):
+    #     """Return True iff we are at the goal, otherwise drive there"""
 
-        twist = Twist()
+    #     twist = Twist()
 
 
-        x_diff = goal_x - self._cur_x
-        y_diff = goal_y - self._cur_y
-        dist = math.sqrt(x_diff * x_diff + y_diff * y_diff)
-        if dist > range_tol:
-            self.get_logger().info(f'{self.get_name()} driving to goal with goal distance {dist}')
-            # turn to the goal
-            heading = math.atan2(y_diff, x_diff)
-            diff = FSM._short_angle(heading - self._cur_theta)
-            if (abs(diff) > heading0_tol):
-                twist.angular.z = FSM._compute_speed(diff, 0.1, 0.05, 0.5)
-                self.get_logger().info(f'{self.get_name()} turning towards goal heading {heading} current {self._cur_theta} diff {diff} {twist.angular.z}')
-                self._publisher.publish(twist)
-                self._cur_twist = twist
-                return False
+    #     x_diff = goal_x - self._cur_x
+    #     y_diff = goal_y - self._cur_y
+    #     dist = math.sqrt(x_diff * x_diff + y_diff * y_diff)
+    #     if dist > range_tol:
+    #         self.get_logger().info(f'{self.get_name()} driving to goal with goal distance {dist}')
+    #         # turn to the goal
+    #         heading = math.atan2(y_diff, x_diff)
+    #         diff = FSM._short_angle(heading - self._cur_theta)
+    #         if (abs(diff) > heading0_tol):
+    #             twist.angular.z = FSM._compute_speed(diff, 0.1, 0.05, 0.5)
+    #             self.get_logger().info(f'{self.get_name()} turning towards goal heading {heading} current {self._cur_theta} diff {diff} {twist.angular.z}')
+    #             self._publisher.publish(twist)
+    #             self._cur_twist = twist
+    #             return False
 
-            twist.linear.x = FSM._compute_speed(dist, 0.5, 0.2, 0.2)
-            self._publisher.publish(twist)
-            self.get_logger().info(f'{self.get_name()} a distance {dist}  from target velocity {twist.linear.x}')
-            self._cur_twist = twist
-            return False
+    #         twist.linear.x = FSM._compute_speed(dist, 0.5, 0.2, 0.2)
+    #         self._publisher.publish(twist)
+    #         self.get_logger().info(f'{self.get_name()} a distance {dist}  from target velocity {twist.linear.x}')
+    #         self._cur_twist = twist
+    #         return False
 
-        self.get_logger().info(f'at goal pose')
-        self._publisher.publish(twist)
-        return True
+    #     self.get_logger().info(f'at goal pose')
+    #     self._publisher.publish(twist)
+    #     return True
 
 
     def _do_state_at_start(self):
