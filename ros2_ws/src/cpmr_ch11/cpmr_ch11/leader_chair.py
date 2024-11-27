@@ -42,6 +42,30 @@ class FSM_STATES(Enum):
 
 class FSM(Node):
 
+    # def __init__(self):
+    #     super().__init__('FSM')
+    #     self.get_logger().info(f'{self.get_name()} created')
+
+    #     self.declare_parameter('chair_name', "chair_0")
+    #     chair_name = self.get_parameter('chair_name').get_parameter_value().string_value
+
+    #     self.create_subscription(Odometry, f"/{chair_name}/odom", self._listener_callback, 1)
+    #     self._publisher = self.create_publisher(Twist, f"/{chair_name}/cmd_vel", 1)
+    #     self.create_service(SetBool, f"/{chair_name}/startup", self._startup_callback)
+    #     self._last_x = 0.0
+    #     self._last_y = 0.0
+    #     self._last_id = 0
+
+    #     # the blackboard
+    #     self._cur_x = 0.0
+    #     self._cur_y = 0.0
+    #     self._cur_theta = 0.0
+    #     self._cur_state = FSM_STATES.AT_START
+    #     self._start_time = self.get_clock().now().nanoseconds * 1e-9
+    #     self._points = [[10, 0], [10, 10], [15, 10], [15, 0]]
+    #     self._point = 0
+    #     self._run = False
+
     def __init__(self):
         super().__init__('FSM')
         self.get_logger().info(f'{self.get_name()} created')
@@ -98,7 +122,24 @@ class FSM(Node):
         twist.linear.x = twist.angular.z = 0.0 
         self.get_logger().info(f'at goal pose')
         self._publisher.publish(twist)
-        return True           
+        return True
+
+
+    def _startup_callback(self, request, resp):
+        self.get_logger().info(f'Got a request {request}')
+        if request.data:
+            self.get_logger().info(f'fsm starting')
+            self._run = True
+            resp.success = True
+            resp.message = "Architecture running"
+        else:
+            self.get_logger().info(f'fsm suspended')
+            self._publisher.publish(Twist())
+            self._run = False
+            resp.success = True
+            resp.message = "Architecture suspended"
+        return resp
+           
 
     def _short_angle(angle):
         if angle > math.pi:
