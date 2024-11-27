@@ -12,7 +12,7 @@ import xacro
 
 
 def generate_launch_description():
-    nchairs = 5
+    nchairs = 1
     for arg in sys.argv: # there must be a better way...
         if arg.startswith('nchairs:='):
            print(arg.split('chairs:=', 1)[1])
