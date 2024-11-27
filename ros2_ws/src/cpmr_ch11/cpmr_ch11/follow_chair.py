@@ -62,12 +62,76 @@ class FollowChair(Node):
 
         self.create_service(SetBool, f"/{self._chair_name}/startup", self._startup_callback)
 
-        # the blackboard
+        # Blackboard variables
         self._target_x = None
         self._target_y = None
         self._cur_state = FSM_STATES.STARTUP
         self._start_time = self.get_clock().now().nanoseconds * 1e-9
         self._run = False
+        
+        # Safe distance parameter
+        self.safe_distance = 0.5  # Safe distance in meters
+
+    def _drive_to_target(self, heading0_tol=0.15, range_tol=1.0):
+        """Return True iff we are at the goal, otherwise drive there. Goal in position space only"""
+
+        twist = Twist()
+
+        x_diff = self._target_x - self._cur_x
+        y_diff = self._target_y - self._cur_y
+        dist = math.sqrt(x_diff * x_diff + y_diff * y_diff)
+
+        if dist > range_tol:
+            self.get_logger().info(f'{self.get_name()} driving to target with target distance {dist}')
+            # turn to the goal
+            heading = math.atan2(y_diff, x_diff)
+            diff = FollowChair._short_angle(heading - self._cur_theta)
+
+            if dist < self.safe_distance:
+                # If too close, slow down and adjust direction
+                twist.linear.x = max(0.0, FollowChair._compute_speed(dist - self.safe_distance, 0.5, 0.05, 0.5))
+                twist.angular.z = FollowChair._compute_speed(diff + math.pi/4, 0.5, -0.5, 0.5)  # Turn away from target
+                if abs(diff) > heading0_tol:
+                    twist.angular.z *= -1  # Ensure turning in correct direction
+            else:
+                # Normal following behavior
+                if abs(diff) > heading0_tol:
+                    twist.angular.z = FollowChair._compute_speed(diff, 0.5, 0.2, 0.2)
+                else:
+                    twist.linear.x = FollowChair._compute_speed(dist, 0.5, 0.05, 0.5)
+
+            self.get_logger().info(f'{self.get_name()} current velocity: linear {twist.linear.x}, angular {twist.angular.z}')
+            self._publisher.publish(twist)
+            return False
+
+        # Stop if at target
+        twist.linear.x = twist.angular.z = 0.0 
+        self.get_logger().info(f'at target')
+        self._publisher.publish(twist)
+        return True
+
+    # def __init__(self):
+    #     super().__init__('FollowChair')
+    #     self.get_logger().info(f'{self.get_name()} created')
+
+    #     self.declare_parameter('chair_name', "chair_1")
+    #     self._chair_name = self.get_parameter('chair_name').get_parameter_value().string_value
+    #     self.declare_parameter('target_name', "chair_0")
+    #     self._target_name = self.get_parameter('target_name').get_parameter_value().string_value
+    #     self.get_logger().info(f'Chair {self._chair_name} is following {self._target_name}')
+
+    #     self.create_subscription(Odometry, f"/{self._chair_name}/odom", self._self_callback, 1)
+    #     self.create_subscription(Odometry, f"/{self._target_name}/odom", self._target_callback, 1)
+    #     self._publisher = self.create_publisher(Twist, f"/{self._chair_name}/cmd_vel", 1)
+
+    #     self.create_service(SetBool, f"/{self._chair_name}/startup", self._startup_callback)
+
+    #     # the blackboard
+    #     self._target_x = None
+    #     self._target_y = None
+    #     self._cur_state = FSM_STATES.STARTUP
+    #     self._start_time = self.get_clock().now().nanoseconds * 1e-9
+    #     self._run = False
 
     def _startup_callback(self, request, resp):
         self.get_logger().info(f'Got a request {request}')
@@ -102,36 +166,36 @@ class FollowChair(Node):
         speed = min(max_speed, max(min_speed, speed))
         return math.copysign(speed, diff)
         
-    def _drive_to_target(self, heading0_tol = 0.15, range_tol = 1.0):
-        """Return True iff we are at the goal, otherwise drive there. Goal in position space only"""
+    # def _drive_to_target(self, heading0_tol = 0.15, range_tol = 1.0):
+    #     """Return True iff we are at the goal, otherwise drive there. Goal in position space only"""
 
-        twist = Twist()
+    #     twist = Twist()
 
-        x_diff = self._target_x - self._cur_x
-        y_diff = self._target_y - self._cur_y
-        dist = math.sqrt(x_diff * x_diff + y_diff * y_diff)
-        if dist > range_tol:
-            self.get_logger().info(f'{self.get_name()} driving to target with target distance {dist}')
-            # turn to the goal
-            heading = math.atan2(y_diff, x_diff)
-            self.get_logger().info(f'Heading to target is {heading} cur_angle is {self._cur_theta}')
-            diff = FollowChair._short_angle(heading - self._cur_theta)
-            if (abs(diff) > heading0_tol):
-                twist.angular.z = FollowChair._compute_speed(diff, 0.5, 0.2, 0.2)
-                self.get_logger().info(f'{self.get_name()} turning towards goal heading {heading} current {self._cur_theta} diff {diff} {twist.angular.z}')
-                self._publisher.publish(twist)
-                self._cur_twist = twist
-                return False
+    #     x_diff = self._target_x - self._cur_x
+    #     y_diff = self._target_y - self._cur_y
+    #     dist = math.sqrt(x_diff * x_diff + y_diff * y_diff)
+    #     if dist > range_tol:
+    #         self.get_logger().info(f'{self.get_name()} driving to target with target distance {dist}')
+    #         # turn to the goal
+    #         heading = math.atan2(y_diff, x_diff)
+    #         self.get_logger().info(f'Heading to target is {heading} cur_angle is {self._cur_theta}')
+    #         diff = FollowChair._short_angle(heading - self._cur_theta)
+    #         if (abs(diff) > heading0_tol):
+    #             twist.angular.z = FollowChair._compute_speed(diff, 0.5, 0.2, 0.2)
+    #             self.get_logger().info(f'{self.get_name()} turning towards goal heading {heading} current {self._cur_theta} diff {diff} {twist.angular.z}')
+    #             self._publisher.publish(twist)
+    #             self._cur_twist = twist
+    #             return False
 
-            twist.linear.x = FollowChair._compute_speed(dist, 0.5, 0.05, 0.5)
-            self._publisher.publish(twist)
-            self.get_logger().info(f'{self.get_name()} a distance {dist}  from target velocity {twist.linear.x}')
-            self._cur_twist = twist
-            return False
+    #         twist.linear.x = FollowChair._compute_speed(dist, 0.5, 0.05, 0.5)
+    #         self._publisher.publish(twist)
+    #         self.get_logger().info(f'{self.get_name()} a distance {dist}  from target velocity {twist.linear.x}')
+    #         self._cur_twist = twist
+    #         return False
 
-        self.get_logger().info(f'at target')
-        self._publisher.publish(twist)
-        return True
+    #     self.get_logger().info(f'at target')
+    #     self._publisher.publish(twist)
+    #     return True
 
 
     def _do_state_at_start(self):
