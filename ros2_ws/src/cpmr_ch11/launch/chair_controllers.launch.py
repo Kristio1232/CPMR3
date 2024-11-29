@@ -32,7 +32,7 @@ def generate_launch_description():
             output='screen',
             parameters=[{'chair_name' : "chair_0"}])
         )
-    print(f"leaderchair done")
+    print(f"leaderchair done Now")
 
 
     for chair in range(1, nchairs):
