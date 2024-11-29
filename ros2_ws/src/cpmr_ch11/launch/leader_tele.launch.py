@@ -37,18 +37,4 @@ def generate_launch_description():
     )
     print(f"Teleop keyboard for leader chair added")
 
-    # Add follower nodes
-    for chair in range(1, nchairs):
-        name = f'chair_{chair}'
-        print(f"Processing {chair}")
-        nodelist.append(
-            Node(
-                namespace = name,
-                package='cpmr_ch11',
-                executable='follow_chair',
-                name='follow_chair',
-                output='screen',
-                parameters=[{'chair_name' : f"chair_{chair}", 'target_name' : f"chair_{chair-1}"}])
-        )
-
     return LaunchDescription(nodelist)
